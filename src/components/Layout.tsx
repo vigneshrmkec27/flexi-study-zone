@@ -34,14 +34,19 @@ const Layout: React.FC<LayoutProps> = ({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
 
-  const navigationItems = [
-    { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-    { id: 'quiz', label: t('nav.quiz'), icon: BookOpen },
-    { id: 'leaderboard', label: t('nav.leaderboard'), icon: Trophy },
-    { id: 'achievements', label: t('nav.achievements'), icon: Award },
-    { id: 'analytics', label: t('nav.analytics'), icon: BarChart3 },
-    { id: 'ar', label: t('nav.ar'), icon: Box },
-  ];
+  const navigationItems = username === 'teacher' 
+    ? [
+        { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+        { id: 'analytics', label: t('nav.analytics'), icon: BarChart3 },
+      ]
+    : [
+        { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+        { id: 'quiz', label: t('nav.quiz'), icon: BookOpen },
+        { id: 'leaderboard', label: t('nav.leaderboard'), icon: Trophy },
+        { id: 'achievements', label: t('nav.achievements'), icon: Award },
+        { id: 'analytics', label: t('nav.analytics'), icon: BarChart3 },
+        { id: 'ar', label: t('nav.ar'), icon: Box },
+      ];
 
   const languageOptions = [
     { value: 'en', label: 'English', flag: '🇺🇸' },
@@ -74,7 +79,7 @@ const Layout: React.FC<LayoutProps> = ({
                 </div>
                 <div>
                   <h1 className="font-bold text-lg text-gradient">EduLearn</h1>
-                  <p className="text-sm text-muted-foreground">Welcome, {username}</p>
+                  <p className="text-sm text-muted-foreground">Welcome, {username} {username === 'teacher' ? '(Teacher)' : ''}</p>
                 </div>
               </div>
               <Button

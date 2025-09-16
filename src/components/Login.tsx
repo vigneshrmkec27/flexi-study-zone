@@ -26,7 +26,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (username === 'student' && password === '1234') {
+    if ((username === 'student' && password === '1234') || (username === 'teacher' && password === '1234')) {
       onLogin(username);
     } else {
       setError(t('login.error'));
@@ -130,8 +130,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 )}
               </Button>
 
-              <div className="text-center text-sm text-muted-foreground">
-                Demo credentials: <code className="bg-muted px-2 py-1 rounded">student / 1234</code>
+              <div className="text-center text-sm text-muted-foreground space-y-1">
+                <div>Student: <code className="bg-muted px-2 py-1 rounded">student / 1234</code></div>
+                <div>Teacher: <code className="bg-muted px-2 py-1 rounded">teacher / 1234</code></div>
               </div>
             </form>
           </Card>

@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import Login from "@/components/Login";
 import Layout from "@/components/Layout";
 import Dashboard from "@/components/Dashboard";
+import TeacherDashboard from "@/components/TeacherDashboard";
 import Quiz from "@/components/Quiz";
 import Leaderboard from "@/components/Leaderboard";
 import Achievements from "@/components/Achievements";
@@ -37,6 +38,19 @@ const App = () => {
   };
 
   const renderCurrentPage = () => {
+    // If user is teacher, show teacher dashboard by default
+    if (username === 'teacher') {
+      switch (currentPage) {
+        case 'dashboard':
+          return <TeacherDashboard />;
+        case 'analytics':
+          return <Analytics />;
+        default:
+          return <TeacherDashboard />;
+      }
+    }
+    
+    // Student pages
     switch (currentPage) {
       case 'dashboard':
         return (
