@@ -209,6 +209,14 @@
     box-shadow: var(--shadow-glow);
   }
 
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
   /* Text Gradient */
   .text-gradient {
     @apply bg-gradient-to-r from-primary to-achievement bg-clip-text text-transparent;
