@@ -204,6 +204,11 @@
     animation: pulseGlow 2s ease-in-out infinite;
   }
 
+  /* Shadow Utilities */
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
   /* Text Gradient */
   .text-gradient {
     @apply bg-gradient-to-r from-primary to-achievement bg-clip-text text-transparent;
