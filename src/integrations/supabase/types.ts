@@ -14,7 +14,220 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          condition_type: string
+          condition_value: number
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          points: number | null
+        }
+        Insert: {
+          condition_type: string
+          condition_value: number
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+          points?: number | null
+        }
+        Update: {
+          condition_type?: string
+          condition_value?: number
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          points?: number | null
+        }
+        Relationships: []
+      }
+      daily_analytics: {
+        Row: {
+          active_users: number | null
+          average_score: number | null
+          created_at: string
+          date: string
+          id: string
+          total_quizzes_attempted: number | null
+        }
+        Insert: {
+          active_users?: number | null
+          average_score?: number | null
+          created_at?: string
+          date: string
+          id?: string
+          total_quizzes_attempted?: number | null
+        }
+        Update: {
+          active_users?: number | null
+          average_score?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          total_quizzes_attempted?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          current_streak: number | null
+          display_name: string | null
+          id: string
+          language_preference: string | null
+          longest_streak: number | null
+          role: string | null
+          total_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          current_streak?: number | null
+          display_name?: string | null
+          id?: string
+          language_preference?: string | null
+          longest_streak?: number | null
+          role?: string | null
+          total_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          current_streak?: number | null
+          display_name?: string | null
+          id?: string
+          language_preference?: string | null
+          longest_streak?: number | null
+          role?: string | null
+          total_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          attempted_at: string
+          difficulty_at_attempt: string
+          id: string
+          is_correct: boolean
+          points_earned: number | null
+          quiz_id: string
+          selected_answer: number
+          time_taken: number | null
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          difficulty_at_attempt: string
+          id?: string
+          is_correct: boolean
+          points_earned?: number | null
+          quiz_id: string
+          selected_answer: number
+          time_taken?: number | null
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          difficulty_at_attempt?: string
+          id?: string
+          is_correct?: boolean
+          points_earned?: number | null
+          quiz_id?: string
+          selected_answer?: number
+          time_taken?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          category: string
+          correct_answer: number
+          created_at: string
+          difficulty: string
+          id: string
+          language: string
+          options: Json
+          points: number | null
+          question: string
+          title: string
+        }
+        Insert: {
+          category: string
+          correct_answer: number
+          created_at?: string
+          difficulty: string
+          id?: string
+          language?: string
+          options: Json
+          points?: number | null
+          question: string
+          title: string
+        }
+        Update: {
+          category?: string
+          correct_answer?: number
+          created_at?: string
+          difficulty?: string
+          id?: string
+          language?: string
+          options?: Json
+          points?: number | null
+          question?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

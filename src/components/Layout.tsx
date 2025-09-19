@@ -1,51 +1,73 @@
-import React, { useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { LogOut, Globe, Home, BookOpen, Trophy, BarChart3, Glasses, Award, Menu, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useLanguage, Language } from '@/contexts/LanguageContext';
-import {
-  LayoutDashboard,
-  BookOpen,
-  Trophy,
-  Award,
-  BarChart3,
-  Box,
-  LogOut,
-  Menu,
-  X,
-  Globe
-} from 'lucide-react';
+import Dashboard from '@/components/Dashboard';
+import TeacherDashboard from '@/components/TeacherDashboard';
+import Quiz from '@/components/Quiz';
+import Leaderboard from '@/components/Leaderboard';
+import Achievements from '@/components/Achievements';
+import Analytics from '@/components/Analytics';
+import ARVRExperience from '@/components/ARVRExperience';
 
 interface LayoutProps {
-  children: React.ReactNode;
-  currentPage: string;
-  onPageChange: (page: string) => void;
-  onLogout: () => void;
-  username: string;
+  children: ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ 
-  children, 
-  currentPage, 
-  onPageChange, 
-  onLogout, 
-  username 
-}) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { language, setLanguage, t } = useLanguage();
+interface UserProfile {
+  display_name: string;
+  role: string;
+}
 
-  const navigationItems = username === 'teacher' 
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { t, language, setLanguage } = useLanguage();
+  const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('display_name, role')
+      .eq('user_id', user.id)
+      .single();
+
+    if (data && !error) {
+      setProfile(data);
+    }
+  };
+
+  const handleQuizComplete = (score: number, accuracy: number) => {
+    console.log('Quiz completed:', { score, accuracy });
+    // TODO: Update user stats in database
+  };
+
+  const isTeacher = profile?.role === 'teacher' || profile?.role === 'admin';
+
+  const navigationItems = isTeacher 
     ? [
-        { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+        { id: 'dashboard', label: t('nav.dashboard'), icon: Home },
         { id: 'analytics', label: t('nav.analytics'), icon: BarChart3 },
       ]
     : [
-        { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+        { id: 'dashboard', label: t('nav.dashboard'), icon: Home },
         { id: 'quiz', label: t('nav.quiz'), icon: BookOpen },
         { id: 'leaderboard', label: t('nav.leaderboard'), icon: Trophy },
         { id: 'achievements', label: t('nav.achievements'), icon: Award },
         { id: 'analytics', label: t('nav.analytics'), icon: BarChart3 },
-        { id: 'ar', label: t('nav.ar'), icon: Box },
+        { id: 'ar', label: t('nav.ar'), icon: Glasses },
       ];
 
   const languageOptions = [
@@ -53,6 +75,46 @@ const Layout: React.FC<LayoutProps> = ({
     { value: 'ta', label: 'தமிழ்', flag: '🇮🇳' },
     { value: 'hi', label: 'हिंदी', flag: '🇮🇳' },
   ];
+
+  const renderCurrentPage = () => {
+    if (isTeacher) {
+      switch (currentPage) {
+        case 'dashboard':
+          return <TeacherDashboard />;
+        case 'analytics':
+          return <Analytics />;
+        default:
+          return <TeacherDashboard />;
+      }
+    }
+    
+    switch (currentPage) {
+      case 'dashboard':
+        return (
+          <Dashboard
+            onStartQuiz={() => setCurrentPage('quiz')}
+            onViewAnalytics={() => setCurrentPage('analytics')}
+          />
+        );
+      case 'quiz':
+        return <Quiz onQuizComplete={handleQuizComplete} />;
+      case 'leaderboard':
+        return <Leaderboard />;
+      case 'achievements':
+        return <Achievements />;
+      case 'analytics':
+        return <Analytics />;
+      case 'ar':
+        return <ARVRExperience />;
+      default:
+        return (
+          <Dashboard
+            onStartQuiz={() => setCurrentPage('quiz')}
+            onViewAnalytics={() => setCurrentPage('analytics')}
+          />
+        );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-background">
@@ -79,7 +141,9 @@ const Layout: React.FC<LayoutProps> = ({
                 </div>
                 <div>
                   <h1 className="font-bold text-lg text-gradient">EduLearn</h1>
-                  <p className="text-sm text-muted-foreground">Welcome, {username} {username === 'teacher' ? '(Teacher)' : ''}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {profile?.display_name || user?.email} {isTeacher ? '(Teacher)' : ''}
+                  </p>
                 </div>
               </div>
               <Button
@@ -95,11 +159,11 @@ const Layout: React.FC<LayoutProps> = ({
 
           {/* Language Selector */}
           <div className="p-4 border-b border-border/40">
-            <Select value={language} onValueChange={(value) => setLanguage(value as Language)}>
+            <Select value={language} onValueChange={(value) => setLanguage(value as any)}>
               <SelectTrigger className="w-full">
                 <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4" />
-                  <SelectValue />
+                  <span>Language</span>
                 </div>
               </SelectTrigger>
               <SelectContent>
@@ -128,7 +192,7 @@ const Layout: React.FC<LayoutProps> = ({
                       : 'hover:bg-secondary/50'
                   }`}
                   onClick={() => {
-                    onPageChange(item.id);
+                    setCurrentPage(item.id);
                     setSidebarOpen(false);
                   }}
                 >
@@ -144,7 +208,7 @@ const Layout: React.FC<LayoutProps> = ({
             <Button
               variant="ghost"
               className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={onLogout}
+              onClick={signOut}
             >
               <LogOut className="w-5 h-5" />
               {t('nav.logout')}
@@ -174,7 +238,7 @@ const Layout: React.FC<LayoutProps> = ({
 
         {/* Page content */}
         <main className="p-6">
-          {children}
+          {renderCurrentPage()}
         </main>
       </div>
     </div>
