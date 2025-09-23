@@ -381,7 +381,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onViewAnalytics, onV
             <div 
               key={cat.category}
               className="group p-6 bg-gradient-to-br from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 border border-primary/20 hover:border-primary/30 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer"
-              onClick={() => onViewSubject?.(cat.category)}
+              onClick={() => {
+                console.log('Category clicked:', cat.category);
+                console.log('onViewSubject function:', onViewSubject);
+                onViewSubject?.(cat.category);
+              }}
             >
               <div className="text-3xl mb-3">{getCategoryEmoji(cat.category)}</div>
               <h4 className="font-semibold text-foreground mb-2">{cat.category}</h4>
@@ -392,6 +396,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onViewAnalytics, onV
                 size="sm" 
                 variant="outline" 
                 className="w-full group-hover:bg-primary/10 group-hover:border-primary/30"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Button clicked for category:', cat.category);
+                  onViewSubject?.(cat.category);
+                }}
               >
                 Start Learning
               </Button>

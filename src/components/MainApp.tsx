@@ -26,8 +26,10 @@ const MainApp: React.FC = () => {
   };
 
   const handleViewSubject = (category: string) => {
+    console.log('handleViewSubject called with:', category);
     setSelectedCategory(category);
     setCurrentView('subject');
+    console.log('State updated - currentView: subject, selectedCategory:', category);
   };
 
   const handleStartQuiz = (quiz?: QuizData) => {
@@ -80,6 +82,10 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Debug info - remove in production */}
+      <div className="fixed top-0 right-0 bg-red-500 text-white p-2 text-xs z-50">
+        Current View: {currentView} | Category: {selectedCategory}
+      </div>
       {renderCurrentView()}
     </div>
   );
