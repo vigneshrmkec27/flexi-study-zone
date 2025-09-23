@@ -18,12 +18,17 @@ import {
   User,
   Clock,
   Trophy,
-  Zap
+  Zap,
+  Users,
+  Brain,
+  Sparkles,
+  Calendar
 } from 'lucide-react';
 
 interface DashboardProps {
   onStartQuiz: () => void;
   onViewAnalytics: () => void;
+  onViewSubject?: (category: string) => void;
 }
 
 interface UserProfile {
@@ -41,7 +46,7 @@ interface UserStats {
   level: number;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onViewAnalytics }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onViewAnalytics, onViewSubject }) => {
   const { user } = useAuth();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userStats, setUserStats] = useState<UserStats>({
@@ -51,6 +56,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onViewAnalytics }) =
     completedQuizzes: 0,
     level: 1
   });
+  const [categories, setCategories] = useState<Array<{category: string, quiz_count: number}>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -58,6 +64,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onViewAnalytics }) =
       fetchUserProfile();
       fetchUserStats();
     }
+    fetchCategories();
   }, [user]);
 
   const fetchUserProfile = async () => {
@@ -122,6 +129,47 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onViewAnalytics }) =
     } catch (error) {
       console.error('Error calculating user stats:', error);
     }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .select('category')
+        .order('category');
+
+      if (error) throw error;
+
+      // Count quizzes per category
+      const categoryMap = new Map();
+      data?.forEach(item => {
+        const count = categoryMap.get(item.category) || 0;
+        categoryMap.set(item.category, count + 1);
+      });
+
+      const categoryStats = Array.from(categoryMap.entries()).map(([category, quiz_count]) => ({
+        category,
+        quiz_count
+      }));
+
+      setCategories(categoryStats);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const getCategoryEmoji = (category: string) => {
+    const emojis: { [key: string]: string } = {
+      'Mathematics': '📊',
+      'Science': '🔬',
+      'History': '🏛️',
+      'Geography': '🌍',
+      'Literature': '📚',
+      'Computer Science': '💻',
+      'Art': '🎨',
+      'Music': '🎵'
+    };
+    return emojis[category] || '📖';
   };
 
   const getUserDisplayName = () => {
@@ -317,7 +365,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onViewAnalytics }) =
         </Card>
       </div>
 
-      {/* Enhanced Study Recommendations */}
+      {/* Subject Categories - Real Data */}
       <Card className="p-8 bg-gradient-to-br from-background to-secondary/20 border-0 shadow-lg animate-fade-in" style={{ animationDelay: '0.6s' }}>
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 rounded-lg bg-primary/10">
@@ -329,40 +377,109 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartQuiz, onViewAnalytics }) =
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="group p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200/50 dark:border-blue-800/30 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer">
-            <div className="text-3xl mb-3">📚</div>
-            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Mathematics</h4>
-            <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">Algebra, Geometry, Calculus</p>
-            <Button size="sm" variant="outline" className="w-full group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30">
-              Start Learning
+          {categories.map((cat, index) => (
+            <div 
+              key={cat.category}
+              className="group p-6 bg-gradient-to-br from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 border border-primary/20 hover:border-primary/30 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer"
+              onClick={() => onViewSubject?.(cat.category)}
+            >
+              <div className="text-3xl mb-3">{getCategoryEmoji(cat.category)}</div>
+              <h4 className="font-semibold text-foreground mb-2">{cat.category}</h4>
+              <p className="text-sm text-muted-foreground mb-4">
+                {cat.quiz_count} quiz{cat.quiz_count !== 1 ? 'es' : ''} available
+              </p>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="w-full group-hover:bg-primary/10 group-hover:border-primary/30"
+              >
+                Start Learning
+              </Button>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Additional Dashboard Sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Study Community */}
+        <Card className="p-6 bg-gradient-to-br from-background to-secondary/20 border-0 shadow-lg animate-fade-in" style={{ animationDelay: '0.7s' }}>
+          <div className="flex items-center gap-2 mb-4">
+            <Users className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold">Study Community</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+              <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium">Top Performer This Week</p>
+                <p className="text-sm text-muted-foreground">Sarah completed 25 quizzes</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg">
+              <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-success" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium">New Challenge Available</p>
+                <p className="text-sm text-muted-foreground">Mathematics Speed Round</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Weekly Challenge */}
+        <Card className="p-6 bg-gradient-to-br from-background to-secondary/20 border-0 shadow-lg animate-fade-in" style={{ animationDelay: '0.8s' }}>
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar className="w-5 h-5 text-warning" />
+            <h3 className="text-lg font-semibold">Weekly Challenge</h3>
+          </div>
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-warning to-warning/80 rounded-full mb-4">
+              <Brain className="w-8 h-8 text-white" />
+            </div>
+            <h4 className="font-semibold mb-2">Mixed Topics Challenge</h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              Answer 20 questions from different subjects
+            </p>
+            <div className="space-y-2 mb-4">
+              <div className="flex justify-between text-sm">
+                <span>Progress</span>
+                <span>3/20</span>
+              </div>
+              <Progress value={15} className="h-2" />
+            </div>
+            <Button size="sm" className="bg-gradient-to-r from-warning to-warning/80">
+              Continue Challenge
             </Button>
           </div>
-          
-          <div className="group p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 border border-green-200/50 dark:border-green-800/30 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer">
-            <div className="text-3xl mb-3">🔬</div>
-            <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">Science</h4>
-            <p className="text-sm text-green-700 dark:text-green-300 mb-4">Physics, Chemistry, Biology</p>
-            <Button size="sm" variant="outline" className="w-full group-hover:bg-green-100 dark:group-hover:bg-green-900/30">
-              Explore Science
-            </Button>
+        </Card>
+      </div>
+
+      {/* Quick Stats */}
+      <Card className="p-6 bg-gradient-to-br from-background to-secondary/20 border-0 shadow-lg animate-fade-in" style={{ animationDelay: '0.9s' }}>
+        <div className="flex items-center gap-2 mb-6">
+          <BarChart3 className="w-5 h-5 text-primary" />
+          <h3 className="text-lg font-semibold">Quick Stats</h3>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-primary mb-1">{categories.length}</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wide">Subjects</div>
           </div>
-          
-          <div className="group p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 border border-purple-200/50 dark:border-purple-800/30 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer">
-            <div className="text-3xl mb-3">🌍</div>
-            <h4 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">Geography</h4>
-            <p className="text-sm text-purple-700 dark:text-purple-300 mb-4">Countries, Capitals, Rivers</p>
-            <Button size="sm" variant="outline" className="w-full group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30">
-              Discover World
-            </Button>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-success mb-1">{categories.reduce((sum, cat) => sum + cat.quiz_count, 0)}</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wide">Total Quizzes</div>
           </div>
-          
-          <div className="group p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/20 border border-orange-200/50 dark:border-orange-800/30 rounded-xl hover:shadow-lg transition-all duration-300 cursor-pointer">
-            <div className="text-3xl mb-3">📖</div>
-            <h4 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">More Subjects</h4>
-            <p className="text-sm text-orange-700 dark:text-orange-300 mb-4">History, Literature, Art, Music</p>
-            <Button size="sm" variant="outline" className="w-full group-hover:bg-orange-100 dark:group-hover:bg-orange-900/30">
-              View All
-            </Button>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-warning mb-1">{userStats.currentStreak}</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wide">Day Streak</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-achievement mb-1">{userStats.level}</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wide">Current Level</div>
           </div>
         </div>
       </Card>
